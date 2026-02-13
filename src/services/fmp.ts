@@ -1,7 +1,7 @@
 import type { EarningsData, QuarterlyEps, AnnualEps, SearchResult } from '../types';
 import { getCached, setCached } from './storage';
 
-const BASE = '/api/fmp';
+const BASE = import.meta.env.DEV ? '/api/fmp' : 'https://financialmodelingprep.com';
 
 async function fetchJson(url: string): Promise<unknown> {
   const response = await fetch(url);
