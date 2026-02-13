@@ -1,4 +1,11 @@
-import type { EarningsData, QuarterlyEps, AnnualEps, SearchResult } from '../types';
+import type {
+  EarningsData,
+  QuarterlyEps,
+  AnnualEps,
+  QuarterlyRevenue,
+  AnnualRevenue,
+  SearchResult,
+} from '../types';
 import { getCached, setCached } from './storage';
 
 const BASE = import.meta.env.DEV ? '/api/fmp' : 'https://financialmodelingprep.com';
@@ -85,6 +92,13 @@ function getEps(row: FmpIncomeStatement): number {
   return Math.round(Number(v) * 100) / 100;
 }
 
+function getRevenue(row: FmpIncomeStatement): number {
+  const v = row.revenue ?? 0;
+  const num = Number(v);
+  if (!Number.isFinite(num) || num < 0) return 0;
+  return Math.round(num);
+}
+
 function getPeriod(row: FmpIncomeStatement): string {
   return String(row.period ?? '');
 }
@@ -97,7 +111,7 @@ function getYear(row: FmpIncomeStatement): number {
 }
 
 export async function getEarnings(apiKey: string, symbol: string): Promise<EarningsData> {
-  const cacheKey = `fmp_earnings_v3_${symbol}`;
+  const cacheKey = `fmp_earnings_v4_${symbol}`;
   const cached = getCached<EarningsData>(cacheKey);
   if (cached) return cached;
 
@@ -140,12 +154,33 @@ export async function getEarnings(apiKey: string, symbol: string): Promise<Earni
 
   annual.sort((a, b) => b.fiscalYear - a.fiscalYear);
 
+  const annualRevenue: AnnualRevenue[] = annualData
+    .filter((s) => getPeriod(s) === 'FY')
+    .map((s) => ({
+      fiscalYear: getYear(s),
+      revenue: getRevenue(s),
+    }))
+    .filter((r) => r.fiscalYear > 0);
+
+  const quarterlyRevenue: QuarterlyRevenue[] = quarterlyData
+    .filter((s) => /^Q[1-4]$/.test(getPeriod(s)))
+    .map((s) => ({
+      fiscalYear: getYear(s),
+      fiscalQuarter: parseInt(getPeriod(s).charAt(1), 10),
+      revenue: getRevenue(s),
+    }))
+    .filter((r) => r.fiscalYear > 0);
+
+  annualRevenue.sort((a, b) => b.fiscalYear - a.fiscalYear);
+
   const data: EarningsData = {
     symbol,
     marketCap: getMarketCap(profileJson),
     ipoDate: getIpoDate(profileJson),
     quarterly,
     annual,
+    quarterlyRevenue,
+    annualRevenue,
   };
   setCached(cacheKey, data);
   return data;
