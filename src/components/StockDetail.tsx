@@ -11,6 +11,13 @@ interface StockDetailProps {
   error: string | null;
 }
 
+function formatMarketCap(value: number): string {
+  if (value >= 1_000_000_000_000) return `${(value / 1_000_000_000_000).toFixed(2)}兆 USD`;
+  if (value >= 100_000_000) return `${(value / 100_000_000).toFixed(2)}億 USD`;
+  if (value >= 10_000) return `${(value / 10_000).toFixed(2)}万 USD`;
+  return `${value.toLocaleString('en-US')} USD`;
+}
+
 export function StockDetail({
   symbol,
   name,
@@ -20,18 +27,31 @@ export function StockDetail({
   loading,
   error,
 }: StockDetailProps) {
+  const marketCap = earningsData?.marketCap ?? null;
+  const ipoDate = earningsData?.ipoDate ?? null;
+
   return (
     <div>
-      <div className="flex items-center gap-3 mb-6">
-        <h2 className="text-xl font-bold text-gray-800">{symbol}</h2>
-        <span className="text-gray-500 text-sm">{name}</span>
-        <button
-          onClick={onToggleBookmark}
-          className="text-xl hover:scale-110 transition-transform"
-          aria-label={isBookmarked ? 'ブックマーク解除' : 'ブックマーク追加'}
-        >
-          {isBookmarked ? '★' : '☆'}
-        </button>
+      <div className="flex items-start justify-between gap-3 mb-6">
+        <div>
+          <h2 className="text-xl font-bold text-gray-800">{symbol}</h2>
+          {marketCap !== null && (
+            <p className="text-sm text-gray-500 mt-1">Market Cap: {formatMarketCap(marketCap)}</p>
+          )}
+          {ipoDate && (
+            <p className="text-sm text-gray-500 mt-1">IPO Date: {ipoDate}</p>
+          )}
+        </div>
+        <div className="flex items-center gap-3">
+          <span className="text-gray-500 text-sm">{name}</span>
+          <button
+            onClick={onToggleBookmark}
+            className="text-xl hover:scale-110 transition-transform"
+            aria-label={isBookmarked ? 'ブックマーク解除' : 'ブックマーク追加'}
+          >
+            {isBookmarked ? '★' : '☆'}
+          </button>
+        </div>
       </div>
 
       {loading && (

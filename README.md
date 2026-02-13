@@ -1,73 +1,60 @@
-# React + TypeScript + Vite
+# FundaView
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+An app to view fundamental trends for US stocks using the [Financial Modeling Prep (FMP) API](https://site.financialmodelingprep.com/developer/docs).
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- Symbol search (NASDAQ / NYSE / AMEX)
+- Annual and quarterly EPS display
+- Year-over-year (YoY) change display
+- Bookmark management
+- Local API key storage (`localStorage`)
 
-## React Compiler
+## Tech Stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- React 19
+- TypeScript
+- Vite 7
+- Tailwind CSS 4
 
-## Expanding the ESLint configuration
+## Setup
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm ci
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Open `http://localhost:5173/fundaview/` in your browser.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Available Scripts
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+- `npm run dev`: Start the dev server
+- `npm run build`: Create a production build
+- `npm run preview`: Preview the production build locally
+- `npm run lint`: Run ESLint
+
+## API Notes
+
+- In development (`npm run dev`), requests go through Vite proxy via `/api/fmp`.
+- In production (GitHub Pages), requests go directly to `https://financialmodelingprep.com`.
+- EPS data uses the `income-statement` endpoint with explicit `period` and `limit` parameters.
+
+## GitHub Pages Deployment
+
+This repository deploys to GitHub Pages via GitHub Actions.
+
+1. Go to `Settings` > `Pages` > `Build and deployment` and set `Source` to `GitHub Actions`.
+2. Push to the `main` branch.
+3. After the `Deploy to GitHub Pages` workflow succeeds, open the published URL.
+
+Example URL:
+
+- `https://<github-username>.github.io/fundaview/`
+
+## Configuration for Repository Name
+
+For GitHub Pages subpath hosting, this project sets the following in `vite.config.ts`:
+
+- `base: '/fundaview/'`
+
+If you rename the repository, update `base` to match the new repository name.
