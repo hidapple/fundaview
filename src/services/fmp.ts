@@ -104,6 +104,8 @@ function getPeriod(row: FmpIncomeStatement): string {
 }
 
 function getYear(row: FmpIncomeStatement): number {
+  const fy = row.fiscalYear ?? row.fiscal_year;
+  if (fy) return parseInt(String(fy), 10);
   const cy = row.calendarYear ?? row.calendar_year;
   if (cy) return parseInt(String(cy), 10);
   const date = String(row.date ?? '');
@@ -111,7 +113,7 @@ function getYear(row: FmpIncomeStatement): number {
 }
 
 export async function getEarnings(apiKey: string, symbol: string): Promise<EarningsData> {
-  const cacheKey = `fmp_earnings_v4_${symbol}`;
+  const cacheKey = `fmp_earnings_v5_${symbol}`;
   const cached = getCached<EarningsData>(cacheKey);
   if (cached) return cached;
 
