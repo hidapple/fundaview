@@ -1,5 +1,6 @@
 import type { EarningsData } from '../types';
 import { EpsTable } from './EpsTable';
+import { RevenueTable } from './RevenueTable';
 
 interface StockDetailProps {
   symbol: string;
@@ -68,16 +69,26 @@ export function StockDetail({
       )}
 
       {earningsData && (
-        <section>
-          <h3 className="text-lg font-semibold text-gray-700 mb-3">
-            EPS推移
-            <span className="text-xs font-normal text-gray-400 ml-2">GAAP Diluted</span>
-          </h3>
-          <EpsTable
-            quarterly={earningsData.quarterly}
-            annual={earningsData.annual}
-          />
-        </section>
+        <div className="space-y-8">
+          <section>
+            <h3 className="text-lg font-semibold text-gray-700 mb-3">
+              EPS推移
+              <span className="text-xs font-normal text-gray-400 ml-2">GAAP Diluted</span>
+            </h3>
+            <EpsTable quarterly={earningsData.quarterly} annual={earningsData.annual} />
+          </section>
+
+          <section>
+            <h3 className="text-lg font-semibold text-gray-700 mb-3">
+              売上推移
+              <span className="text-xs font-normal text-gray-400 ml-2">Revenue (USD)</span>
+            </h3>
+            <RevenueTable
+              quarterly={earningsData.quarterlyRevenue}
+              annual={earningsData.annualRevenue}
+            />
+          </section>
+        </div>
       )}
     </div>
   );

@@ -29,9 +29,10 @@ function formatYoy(value: number | null): string {
 
 function yoyColor(value: number | null): string {
   if (value === null) return '';
-  if (value > 0) return 'text-green-600';
+  if (value >= 25) return 'text-green-600';
+  if (value >= 0) return 'text-slate-500';
   if (value < 0) return 'text-red-600';
-  return 'text-gray-500';
+  return 'text-slate-500';
 }
 
 function calcYoy(current: number, previous: number): number | null {

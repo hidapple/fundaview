@@ -10,12 +10,25 @@ export interface AnnualEps {
   eps: number;
 }
 
+export interface QuarterlyRevenue {
+  fiscalYear: number;
+  fiscalQuarter: number;
+  revenue: number;
+}
+
+export interface AnnualRevenue {
+  fiscalYear: number;
+  revenue: number;
+}
+
 export interface EarningsData {
   symbol: string;
   marketCap: number | null;
   ipoDate: string | null;
   quarterly: QuarterlyEps[];
   annual: AnnualEps[];
+  quarterlyRevenue: QuarterlyRevenue[];
+  annualRevenue: AnnualRevenue[];
 }
 
 export interface SearchResult {
