@@ -2,6 +2,8 @@ import type { EarningsData, QuarterlyEps, AnnualEps, SearchResult } from '../typ
 import { getCached, setCached } from './storage';
 
 const BASE = import.meta.env.DEV ? '/api/fmp' : 'https://financialmodelingprep.com';
+const ANNUAL_LIMIT = 30;
+const QUARTERLY_LIMIT = 120;
 
 async function fetchJson(url: string): Promise<unknown> {
   const response = await fetch(url);
@@ -36,6 +38,48 @@ interface FmpIncomeStatement {
   [key: string]: unknown;
 }
 
+interface FmpProfile {
+  [key: string]: unknown;
+}
+
+function parseMarketCap(value: unknown): number | null {
+  const num = Number(value);
+  if (!Number.isFinite(num) || num <= 0) return null;
+  return Math.round(num);
+}
+
+function parseIpoDate(value: unknown): string | null {
+  const str = String(value ?? '').trim();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(str)) return null;
+  return str;
+}
+
+function getMarketCap(profileJson: unknown): number | null {
+  if (Array.isArray(profileJson)) {
+    const profile = (profileJson[0] ?? null) as FmpProfile | null;
+    if (!profile) return null;
+    return parseMarketCap(profile.marketCap ?? profile.mktCap);
+  }
+  if (profileJson && typeof profileJson === 'object') {
+    const profile = profileJson as FmpProfile;
+    return parseMarketCap(profile.marketCap ?? profile.mktCap);
+  }
+  return null;
+}
+
+function getIpoDate(profileJson: unknown): string | null {
+  if (Array.isArray(profileJson)) {
+    const profile = (profileJson[0] ?? null) as FmpProfile | null;
+    if (!profile) return null;
+    return parseIpoDate(profile.ipoDate);
+  }
+  if (profileJson && typeof profileJson === 'object') {
+    const profile = profileJson as FmpProfile;
+    return parseIpoDate(profile.ipoDate);
+  }
+  return null;
+}
+
 function getEps(row: FmpIncomeStatement): number {
   const v = row.epsdiluted ?? row.epsDiluted ?? row.eps ?? 0;
   return Math.round(Number(v) * 100) / 100;
@@ -53,16 +97,19 @@ function getYear(row: FmpIncomeStatement): number {
 }
 
 export async function getEarnings(apiKey: string, symbol: string): Promise<EarningsData> {
-  const cacheKey = `fmp_earnings_v1_${symbol}`;
+  const cacheKey = `fmp_earnings_v3_${symbol}`;
   const cached = getCached<EarningsData>(cacheKey);
   if (cached) return cached;
 
-  const [annualJson, quarterlyJson] = await Promise.all([
+  const [annualJson, quarterlyJson, profileJson] = await Promise.all([
     fetchJson(
-      `${BASE}/stable/income-statement?symbol=${encodeURIComponent(symbol)}&period=annual&apikey=${encodeURIComponent(apiKey)}`,
+      `${BASE}/stable/income-statement?symbol=${encodeURIComponent(symbol)}&period=annual&limit=${ANNUAL_LIMIT}&apikey=${encodeURIComponent(apiKey)}`,
     ),
     fetchJson(
-      `${BASE}/stable/income-statement?symbol=${encodeURIComponent(symbol)}&period=quarter&apikey=${encodeURIComponent(apiKey)}`,
+      `${BASE}/stable/income-statement?symbol=${encodeURIComponent(symbol)}&period=quarter&limit=${QUARTERLY_LIMIT}&apikey=${encodeURIComponent(apiKey)}`,
+    ),
+    fetchJson(
+      `${BASE}/stable/profile?symbol=${encodeURIComponent(symbol)}&apikey=${encodeURIComponent(apiKey)}`,
     ),
   ]);
 
@@ -93,7 +140,13 @@ export async function getEarnings(apiKey: string, symbol: string): Promise<Earni
 
   annual.sort((a, b) => b.fiscalYear - a.fiscalYear);
 
-  const data: EarningsData = { symbol, quarterly, annual };
+  const data: EarningsData = {
+    symbol,
+    marketCap: getMarketCap(profileJson),
+    ipoDate: getIpoDate(profileJson),
+    quarterly,
+    annual,
+  };
   setCached(cacheKey, data);
   return data;
 }

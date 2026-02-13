@@ -12,6 +12,8 @@ export interface AnnualEps {
 
 export interface EarningsData {
   symbol: string;
+  marketCap: number | null;
+  ipoDate: string | null;
   quarterly: QuarterlyEps[];
   annual: AnnualEps[];
 }
