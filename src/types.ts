@@ -39,4 +39,5 @@ export interface SearchResult {
 export interface Bookmark {
   symbol: string;
   name: string;
+  group: string;
 }

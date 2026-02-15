@@ -5,6 +5,7 @@ import { RevenueTable } from './RevenueTable';
 interface StockDetailProps {
   symbol: string;
   name: string;
+  bookmarkGroups: string[];
   isBookmarked: boolean;
   onToggleBookmark: () => void;
   earningsData: EarningsData | null;
@@ -22,6 +23,7 @@ function formatMarketCap(value: number): string {
 export function StockDetail({
   symbol,
   name,
+  bookmarkGroups,
   isBookmarked,
   onToggleBookmark,
   earningsData,
@@ -44,6 +46,9 @@ export function StockDetail({
           )}
         </div>
         <div className="flex items-center gap-3">
+          {bookmarkGroups.length > 0 && (
+            <span className="text-xs text-gray-400">Groups: {bookmarkGroups.join(', ')}</span>
+          )}
           <span className="text-gray-500 text-sm">{name}</span>
           <button
             onClick={onToggleBookmark}

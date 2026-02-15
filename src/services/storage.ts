@@ -20,23 +20,67 @@ export function removeApiKey(): void {
 export function getBookmarks(): Bookmark[] {
   const raw = localStorage.getItem(BOOKMARKS_KEY);
   if (!raw) return [];
-  return JSON.parse(raw) as Bookmark[];
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    if (!Array.isArray(parsed)) return [];
+
+    return parsed
+      .map((item) => normalizeBookmark(item))
+      .filter((item): item is Bookmark => item !== null);
+  } catch {
+    return [];
+  }
 }
 
 export function addBookmark(bookmark: Bookmark): void {
   const bookmarks = getBookmarks();
-  if (bookmarks.some((b) => b.symbol === bookmark.symbol)) return;
-  bookmarks.push(bookmark);
+  const normalizedGroup = normalizeGroupName(bookmark.group);
+  if (!normalizedGroup) return;
+
+  const normalized: Bookmark = {
+    symbol: bookmark.symbol,
+    name: bookmark.name,
+    group: normalizedGroup,
+  };
+
+  if (bookmarks.some((b) => b.symbol === normalized.symbol && b.group === normalized.group)) return;
+  bookmarks.push(normalized);
   localStorage.setItem(BOOKMARKS_KEY, JSON.stringify(bookmarks));
 }
 
-export function removeBookmark(symbol: string): void {
-  const bookmarks = getBookmarks().filter((b) => b.symbol !== symbol);
+export function removeBookmark(symbol: string, group: string): void {
+  const normalizedGroup = normalizeGroupName(group);
+  if (!normalizedGroup) return;
+  const bookmarks = getBookmarks().filter((b) => !(b.symbol === symbol && b.group === normalizedGroup));
   localStorage.setItem(BOOKMARKS_KEY, JSON.stringify(bookmarks));
 }
 
-export function isBookmarked(symbol: string): boolean {
-  return getBookmarks().some((b) => b.symbol === symbol);
+export function isBookmarked(symbol: string, group?: string): boolean {
+  const bookmarks = getBookmarks();
+  if (!group) return bookmarks.some((b) => b.symbol === symbol);
+
+  const normalizedGroup = normalizeGroupName(group);
+  if (!normalizedGroup) return false;
+  return bookmarks.some((b) => b.symbol === symbol && b.group === normalizedGroup);
+}
+
+function normalizeGroupName(group: string | undefined): string {
+  return typeof group === 'string' ? group.trim() : '';
+}
+
+function normalizeBookmark(value: unknown): Bookmark | null {
+  if (!value || typeof value !== 'object') return null;
+
+  const raw = value as Partial<Bookmark>;
+  if (typeof raw.symbol !== 'string' || typeof raw.name !== 'string') return null;
+  const group = normalizeGroupName(raw.group);
+  if (!group) return null;
+
+  return {
+    symbol: raw.symbol,
+    name: raw.name,
+    group,
+  };
 }
 
 interface CacheEntry<T> {
