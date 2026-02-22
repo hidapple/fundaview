@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type { EarningsData } from '../types';
 import { EpsTable } from './EpsTable';
 import { RevenueTable } from './RevenueTable';
@@ -30,8 +31,10 @@ export function StockDetail({
   loading,
   error,
 }: StockDetailProps) {
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   const marketCap = earningsData?.marketCap ?? null;
   const ipoDate = earningsData?.ipoDate ?? null;
+  const description = earningsData?.description ?? null;
 
   return (
     <div>
@@ -75,6 +78,26 @@ export function StockDetail({
 
       {earningsData && (
         <div className="space-y-8">
+          {description && (
+            <section>
+              <div className="flex items-center justify-between gap-3 mb-3">
+                <h3 className="text-lg font-semibold text-gray-700">Company Description</h3>
+                <button
+                  type="button"
+                  onClick={() => setIsDescriptionExpanded((v) => !v)}
+                  className="text-xs text-blue-600 hover:text-blue-700"
+                >
+                  {isDescriptionExpanded ? '説明を隠す' : '説明を表示'}
+                </button>
+              </div>
+              {isDescriptionExpanded && (
+                <p className="text-sm leading-7 text-gray-700 whitespace-pre-wrap">
+                  {description}
+                </p>
+              )}
+            </section>
+          )}
+
           <section>
             <h3 className="text-lg font-semibold text-gray-700 mb-3">
               EPS推移

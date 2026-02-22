@@ -25,6 +25,7 @@ export interface EarningsData {
   symbol: string;
   marketCap: number | null;
   ipoDate: string | null;
+  description: string | null;
   quarterly: QuarterlyEps[];
   annual: AnnualEps[];
   quarterlyRevenue: QuarterlyRevenue[];

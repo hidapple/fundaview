@@ -87,6 +87,24 @@ function getIpoDate(profileJson: unknown): string | null {
   return null;
 }
 
+function parseDescription(value: unknown): string | null {
+  const str = String(value ?? '').trim();
+  return str.length > 0 ? str : null;
+}
+
+function getDescription(profileJson: unknown): string | null {
+  if (Array.isArray(profileJson)) {
+    const profile = (profileJson[0] ?? null) as FmpProfile | null;
+    if (!profile) return null;
+    return parseDescription(profile.description);
+  }
+  if (profileJson && typeof profileJson === 'object') {
+    const profile = profileJson as FmpProfile;
+    return parseDescription(profile.description);
+  }
+  return null;
+}
+
 function getEps(row: FmpIncomeStatement): number {
   const v = row.epsdiluted ?? row.epsDiluted ?? row.eps ?? 0;
   return Math.round(Number(v) * 100) / 100;
@@ -113,7 +131,7 @@ function getYear(row: FmpIncomeStatement): number {
 }
 
 export async function getEarnings(apiKey: string, symbol: string): Promise<EarningsData> {
-  const cacheKey = `fmp_earnings_v5_${symbol}`;
+  const cacheKey = `fmp_earnings_v6_${symbol}`;
   const cached = getCached<EarningsData>(cacheKey);
   if (cached) return cached;
 
@@ -179,6 +197,7 @@ export async function getEarnings(apiKey: string, symbol: string): Promise<Earni
     symbol,
     marketCap: getMarketCap(profileJson),
     ipoDate: getIpoDate(profileJson),
+    description: getDescription(profileJson),
     quarterly,
     annual,
     quarterlyRevenue,
