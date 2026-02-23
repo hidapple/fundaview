@@ -109,7 +109,7 @@ export function StockDetail({
           <section>
             <h3 className="text-lg font-semibold text-gray-700 mb-3">
               売上推移
-              <span className="text-xs font-normal text-gray-400 ml-2">Revenue (USD)</span>
+              <span className="text-xs font-normal text-gray-400 ml-2">Revenue</span>
             </h3>
             <RevenueTable
               quarterly={earningsData.quarterlyRevenue}

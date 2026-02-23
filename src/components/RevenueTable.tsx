@@ -18,10 +18,10 @@ interface CellData {
 }
 
 function formatRevenue(value: number): string {
-  if (value >= 1_000_000_000_000) return `${(value / 1_000_000_000_000).toFixed(2)}兆 USD`;
-  if (value >= 100_000_000) return `${(value / 100_000_000).toFixed(2)}億 USD`;
-  if (value >= 10_000) return `${(value / 10_000).toFixed(2)}万 USD`;
-  return `${value.toLocaleString('en-US')} USD`;
+  if (value >= 1_000_000_000_000) return `${(value / 1_000_000_000_000).toFixed(2)}兆`;
+  if (value >= 100_000_000) return `${(value / 100_000_000).toFixed(2)}億`;
+  if (value >= 10_000) return `${(value / 10_000).toFixed(2)}万`;
+  return value.toLocaleString('en-US');
 }
 
 function formatYoy(value: number | null): string {
